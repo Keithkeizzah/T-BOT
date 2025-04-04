@@ -88,11 +88,11 @@ function handleInvalidCommand(bot) {
         const inputCommand = match[1].toLowerCase();
         const isValidCommand = commands.some(cmd => cmd.config.name === inputCommand);
         
-        if (!isValidCommand) {
+        /*if (!isValidCommand) {
             bot.sendMessage(msg.chat.id, `The command you are using does not exist, type ${config.prefix}help to see all available commands.`);
         }
     });
-}
+}*/
 
 
 async function isUserAdmin(bot, chatId, userId) {
