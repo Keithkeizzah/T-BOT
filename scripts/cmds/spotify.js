@@ -42,7 +42,7 @@ module.exports = {
 
     } catch (error) {
       console.error('[ERROR]', error);
-      bot.sendMessage(chatId, 'An error occurred while processing the command.');
+      bot.sendMessage(chatId, 'An error occurred while processing the command.' + error );
     } finally {
       await bot.deleteMessage(chatId, searchMessage.message_id);
     }
