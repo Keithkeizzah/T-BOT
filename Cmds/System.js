@@ -203,7 +203,7 @@ async (msg, bot, context) => {
 
 keith({
     pattern: "uptime",
-    aliases: ["stats", "status"],
+    aliases: ["up", "status"],
     category: "system",
     description: "Display bot statistics",
     cooldown: 5
