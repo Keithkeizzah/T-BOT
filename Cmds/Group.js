@@ -16,40 +16,72 @@ const { keith } = require('../commandHandler');
 //========================================================================================================================
 //========================================================================================================================
 
+
+
 keith({
-    pattern: "admins",
-    aliases: ["adminlist", "listadmins"],
+    pattern: "groupinfo",
+    aliases: ["ginfo", "group", "chatinfo"],
     category: "group",
-    description: "List all group admins",
+    description: "Get group information",
     cooldown: 10
 },
 
 async (msg, bot, context) => {
     const { reply } = context;
 
+    // Only works in groups
+    if (msg.chat.type === 'private') {
+        return await reply("❌ This command only works in groups.");
+    }
+
     try {
+        const chat = await bot.getChat(context.chatId);
+        const membersCount = await bot.getChatMembersCount(context.chatId);
         const admins = await bot.getChatAdministrators(context.chatId);
+
+        // Get group creator
+        const creator = admins.find(admin => admin.status === 'creator');
+        const creatorName = creator ? 
+            `${creator.user.first_name}${creator.user.last_name ? ' ' + creator.user.last_name : ''}` : 
+            'Unknown';
+
+        // Build group info
+        let groupInfo = `🏷️ *Group Information*\n\n`;
+        groupInfo += `📛 *Name:* ${chat.title}\n`;
+        groupInfo += `🆔 *Group ID:* \`${context.chatId}\`\n`;
+        groupInfo += `👥 *Members:* ${membersCount}\n`;
+        groupInfo += `⭐ *Admins:* ${admins.length}\n`;
+        groupInfo += `👑 *Creator:* ${creatorName}\n`;
+        groupInfo += `📝 *Type:* ${chat.type}\n`;
         
-        if (admins.length === 0) {
-            return await reply("❌ No admins found in this group.");
+        if (chat.description) {
+            groupInfo += `📄 *Description:* ${chat.description}\n`;
+        }
+        
+        if (chat.username) {
+            groupInfo += `🔗 *Username:* @${chat.username}\n`;
+        }
+        
+        if (chat.invite_link) {
+            groupInfo += `🔗 *Invite Link:* ${chat.invite_link}\n`;
         }
 
-        let adminList = "👑 *Group Admins:*\n\n";
-        
-        admins.forEach((admin, index) => {
-            const user = admin.user;
-            const name = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-            const username = user.username ? `(@${user.username})` : '';
-            const status = admin.status === 'creator' ? ' 👑 Creator' : ' ⭐ Admin';
+        // Send group photo if available
+        if (chat.photo) {
+            const photo = await bot.getFile(chat.photo.big_file_id);
+            const photoUrl = `https://api.telegram.org/file/bot${bot.token}/${photo.file_path}`;
             
-            adminList += `${index + 1}. ${name} ${username}${status}\n`;
-        });
-
-        await reply(adminList, { parse_mode: 'Markdown' });
+            await bot.sendPhoto(context.chatId, photoUrl, {
+                caption: groupInfo,
+                parse_mode: 'Markdown'
+            });
+        } else {
+            await reply(groupInfo, { parse_mode: 'Markdown' });
+        }
 
     } catch (error) {
-        console.error('Admin list error:', error);
-        await reply("❌ Failed to get admin list. Make sure this is a group chat.");
+        console.error('Group info error:', error);
+        await reply("❌ Failed to get group information.");
     }
 });
 //========================================================================================================================
