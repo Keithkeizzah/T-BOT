@@ -1,4 +1,3 @@
-
 const { keith, commands } = require('../commandHandler');
 
 keith({
@@ -11,6 +10,17 @@ keith({
 
 async (msg, bot, context) => {
   const { reply, pushName, botName, owner, prefix } = context;
+
+  // Menu buttons
+  const menuButtons = [
+    [
+        { text: 'Bot Site', url: 'https://keithsite.vercel.app' },
+        { text: '👑 Owner', url: 'https://t.me/keithkeizzah' }
+    ],
+    [
+        { text: '💬 Telegram Group', url: 'https://t.me/keithmd' }
+    ]
+  ];
 
   // Group commands by category
   const categories = {};
@@ -37,16 +47,17 @@ async (msg, bot, context) => {
   for (const [category, cmds] of Object.entries(categories)) {
     menu += `╭─────「 ${category} 」─┈⊷\n`;
     
-    // Split commands into chunks of 2 for better formatting
-    for (let i = 0; i < cmds.length; i += 2) {
-      const line = cmds.slice(i, i + 2)
-        .map(cmd => `││◦➛ ${cmd}`)
-        .join(' ');
-      menu += `${line}\n`;
-    }
+    // List all commands in the category
+    cmds.forEach(cmd => {
+      menu += `││◦➛ ${cmd}\n`;
+    });
     
     menu += `╰─────────────────────⏣\n`;
   }
 
-  await reply(menu);
+  await reply(menu, {
+    reply_markup: {
+      inline_keyboard: menuButtons
+    }
+  });
 });
