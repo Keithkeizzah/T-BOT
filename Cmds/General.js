@@ -1,9 +1,10 @@
+
 const { keith } = require('../commandHandler');
 const axios = require('axios');
 
 keith({
   pattern: "repo",
-  aliases: ["script", "sc"],   
+  aliases: ["script", "sc"],   // includes both aliases
   category: "utility",
   description: "Fetch repository info from GitHub",
   cooldown: 5
@@ -13,9 +14,13 @@ async (msg, bot, context) => {
   // destructure pushName and sourceUrl directly from context
   const { chatId, pushName, sourceUrl } = context;
 
+  // add sourceUrl into context just like pushName
+  context.sourceUrl = "https://api.github.com/repos/Keithkeizzah/T-BOT";
+
   await bot.sendChatAction(chatId, 'typing');
 
-  const response = await axios.get(sourceUrl, { timeout: 30000 });
+  // use the fixed GitHub API link
+  const response = await axios.get(context.sourceUrl, { timeout: 30000 });
   const repo = response.data;
 
   // Helper to format dates
