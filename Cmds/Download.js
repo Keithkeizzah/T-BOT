@@ -11,8 +11,94 @@ const axios = require('axios');
 //========================================================================================================================
 //========================================================================================================================
 //========================================================================================================================
+
+
+
+keith({
+  pattern: "apk",
+  aliases: ["app", "aptoide"],
+  category: "download",
+  description: "Download APKs from Aptoide",
+  cooldown: 10
+},
+
+async (msg, bot, context) => {
+  const { reply, q } = context;
+
+  if (!q) {
+    return await reply(`Please provide an app name!\nExample: ${context.prefix}apk xender`);
+  }
+
+  try {
+    await bot.sendChatAction(context.chatId, 'typing');
+
+    // Search Aptoide API
+    const searchUrl = `https://apiskeith.vercel.app/search/aptoide?q=${encodeURIComponent(q)}`;
+    const searchResponse = await axios.get(searchUrl, { timeout: 30000 });
+    const searchData = searchResponse.data;
+
+    if (!searchData.status || !searchData.result || !searchData.result.datalist || !searchData.result.datalist.list || searchData.result.datalist.list.length === 0) {
+      return await reply('No APK found for your query.');
+    }
+
+    // Get the first result
+    const app = searchData.result.datalist.list[0];
+
+    await reply(`📲 Downloading APK: ${app.name} (v${app.file.vername})`);
+
+    await bot.sendChatAction(context.chatId, 'upload_document');
+
+    // Send APK file
+    await bot.sendDocument(context.chatId, app.file.path, {
+      filename: `${app.uname}-${app.file.vername}.apk`,
+      caption: `📱 ${app.name}\n👤 Developer: ${app.developer.name}\n⬇️ Downloads: ${app.stats.downloads}\n⭐ Rating: ${app.stats.rating.avg}`
+    });
+
+  } catch (error) {
+    await reply('Error downloading APK. Try again later.');
+  }
+});
 //========================================================================================================================
-//========================================================================================================================
+
+
+keith({
+  pattern: "twitter",
+  aliases: ["tw", "tweet"],
+  category: "download",
+  description: "Download Twitter videos",
+  cooldown: 10
+},
+
+async (msg, bot, context) => {
+  const { reply, q } = context;
+
+  if (!q) {
+    return await reply(`Please provide a Twitter video URL!\nExample: ${context.prefix}twitter https://twitter.com/futurism/status/882987478541533189`);
+  }
+
+  try {
+    await bot.sendChatAction(context.chatId, 'typing');
+
+    // Call Twitter downloader API
+    const apiUrl = `https://apiskeith.vercel.app/download/twitter?url=${encodeURIComponent(q)}`;
+    const response = await axios.get(apiUrl, { timeout: 30000 });
+    const data = response.data;
+
+    if (!data.status || !data.result) {
+      return await reply('Failed to fetch Twitter video.');
+    }
+
+    const videoUrl = data.result.video_hd || data.result.video_sd; // prefer HD
+
+    await bot.sendChatAction(context.chatId, 'upload_video');
+
+    // Send video only (no caption)
+    await bot.sendVideo(context.chatId, videoUrl);
+
+  } catch (error) {
+    await reply('Error downloading Twitter video. Try again later.');
+  }
+});
 //========================================================================================================================
 
 
